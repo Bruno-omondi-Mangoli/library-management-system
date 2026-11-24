@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { PrismaClient, Role } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -62,23 +63,37 @@ async function main() {
     skipDuplicates: true,
   });
 
-  // 3. Two users, one per role
+  // 3. Users with bcrypt-hashed passwords: one librarian, one patron
+  const librarianPassword = await bcrypt.hash('Librarian123!', 10);
+  const patronPassword = await bcrypt.hash('Patron123!', 10);
+
   await prisma.user.upsert({
     where: { email: 'librarian@library.test' },
     update: {},
-    create: { email: 'librarian@library.test', name: 'Lara Librarian', role: Role.LIBRARIAN },
+    create: {
+      email: 'librarian@library.test',
+      name: 'Lara Librarian',
+      password: librarianPassword,
+      role: Role.LIBRARIAN,
+    },
   });
   await prisma.user.upsert({
     where: { email: 'patron@library.test' },
     update: {},
-    create: { email: 'patron@library.test', name: 'Paul Patron', role: Role.PATRON },
+    create: {
+      email: 'patron@library.test',
+      name: 'Paul Patron',
+      password: patronPassword,
+      role: Role.PATRON,
+    },
   });
 
-  const [genreCount, bookCount] = await Promise.all([
+  const [genreCount, bookCount, userCount] = await Promise.all([
     prisma.genre.count(),
     prisma.book.count(),
+    prisma.user.count(),
   ]);
-  console.log(`Seeded ${genreCount} genres and ${bookCount} books.`);
+  console.log(`Seeded ${genreCount} genres, ${bookCount} books and ${userCount} users.`);
 }
 
 main()
