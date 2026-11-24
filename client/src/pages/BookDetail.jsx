@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import axios from 'axios'
+import ReadingListButton from '../components/ReadingListButton.jsx'
 
 function BookDetail() {
   const { id } = useParams()
@@ -110,6 +111,7 @@ function BookDetail() {
               </dd>
             </div>
           </dl>
+         <ReadingListButton book={book} />
         </div>
       </article>
     </div>
